@@ -1,0 +1,874 @@
+{% extends 'base.html' %}
+
+{% block title %}Groups | Facebook{% endblock %}
+
+{% block extra_css %}
+<style>
+    .groups-container {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 16px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .groups-sidebar {
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
+        height: fit-content;
+        position: sticky;
+        top: 72px;
+    }
+    
+    .groups-main {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
+    }
+    
+    .groups-sidebar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+    
+    .groups-sidebar-title {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    
+    .create-group-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--fb-light-gray);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .create-group-btn:hover {
+        background: var(--fb-hover);
+    }
+    
+    .create-group-btn i {
+        font-size: 20px;
+    }
+    
+    .groups-search {
+        position: relative;
+        margin-bottom: 16px;
+    }
+    
+    .groups-search input {
+        width: 100%;
+        padding: 10px 12px 10px 40px;
+        border: none;
+        border-radius: 50px;
+        font-size: 15px;
+        background: var(--fb-light-gray);
+    }
+    
+    .groups-search input:focus {
+        outline: none;
+        background: var(--fb-hover);
+    }
+    
+    .groups-search i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--fb-dark-gray);
+    }
+    
+    .groups-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        color: #050505;
+        margin-bottom: 4px;
+        transition: background 0.2s;
+    }
+    
+    .groups-nav-item:hover {
+        background: var(--fb-hover);
+    }
+    
+    .groups-nav-item.active {
+        background: var(--fb-hover);
+    }
+    
+    .groups-nav-item .icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+    
+    .groups-nav-item.active .icon {
+        background: var(--fb-blue);
+        color: white;
+    }
+    
+    .groups-nav-item .icon.gradient-1 {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .groups-nav-item .icon.gradient-2 {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+    
+    .groups-nav-item .icon.gradient-3 {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+    
+    .groups-nav-item .text {
+        flex: 1;
+        font-size: 15px;
+        font-weight: 500;
+    }
+    
+    .groups-nav-item .count {
+        font-size: 13px;
+        color: var(--fb-dark-gray);
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .section-title {
+        font-size: 20px;
+        font-weight: bold;
+    }
+    
+    .section-subtitle {
+        font-size: 15px;
+        color: var(--fb-dark-gray);
+        margin-top: 4px;
+    }
+    
+    .view-all-link {
+        color: var(--fb-blue);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 15px;
+    }
+    
+    .view-all-link:hover {
+        text-decoration: underline;
+    }
+    
+    .filter-buttons {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+    
+    .filter-buttons::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    .filter-buttons::-webkit-scrollbar-thumb {
+        background: var(--fb-border);
+        border-radius: 2px;
+    }
+    
+    .filter-btn {
+        padding: 8px 16px;
+        background: var(--fb-light-gray);
+        border: none;
+        border-radius: 20px;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+    
+    .filter-btn:hover {
+        background: var(--fb-hover);
+    }
+    
+    .filter-btn.active {
+        background: var(--fb-blue);
+        color: white;
+    }
+    
+    .groups-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 16px;
+    }
+    
+    .group-card {
+        border: 1px solid var(--fb-border);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        background: white;
+    }
+    
+    .group-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+    }
+    
+    .group-card-cover {
+        position: relative;
+        width: 100%;
+        height: 150px;
+        overflow: hidden;
+    }
+    
+    .group-card-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+    }
+    
+    .group-card:hover .group-card-cover img {
+        transform: scale(1.05);
+    }
+    
+    .group-card-cover-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, var(--fb-blue) 0%, var(--fb-dark-blue) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .group-card-cover-placeholder i {
+        font-size: 48px;
+        color: white;
+        opacity: 0.8;
+    }
+    
+    .group-card-privacy {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .group-card-body {
+        padding: 16px;
+    }
+    
+    .group-card-name {
+        font-size: 17px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #050505;
+        text-decoration: none;
+        display: block;
+        line-height: 1.3;
+    }
+    
+    .group-card-name:hover {
+        text-decoration: underline;
+    }
+    
+    .group-card-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        font-size: 13px;
+        color: var(--fb-dark-gray);
+    }
+    
+    .group-card-info-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .group-card-activity {
+        font-size: 13px;
+        color: var(--fb-dark-gray);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .group-card-members {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    
+    .group-card-member-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 2px solid white;
+        margin-left: -8px;
+        object-fit: cover;
+    }
+    
+    .group-card-member-avatar:first-child {
+        margin-left: 0;
+    }
+    
+    .group-card-member-count {
+        margin-left: 8px;
+        font-size: 13px;
+        color: var(--fb-dark-gray);
+    }
+    
+    .group-card-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .group-card-btn {
+        flex: 1;
+        padding: 8px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+    
+    .group-card-btn-primary {
+        background: var(--fb-blue);
+        color: white;
+    }
+    
+    .group-card-btn-primary:hover {
+        background: var(--fb-blue-hover);
+    }
+    
+    .group-card-btn-secondary {
+        background: var(--fb-light-gray);
+        color: #050505;
+    }
+    
+    .group-card-btn-secondary:hover {
+        background: var(--fb-hover);
+    }
+    
+    .group-card-btn-joined {
+        background: #e4e6eb;
+        color: #050505;
+        position: relative;
+    }
+    
+    .group-card-btn-joined:hover {
+        background: #d8dadf;
+    }
+    
+    .my-groups-list {
+        margin-bottom: 16px;
+    }
+    
+    .my-group-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        color: #050505;
+        margin-bottom: 4px;
+        transition: background 0.2s;
+    }
+    
+    .my-group-item:hover {
+        background: var(--fb-hover);
+    }
+    
+    .my-group-item img {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+    
+    .my-group-item-placeholder {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--fb-blue), var(--fb-dark-blue));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+    }
+    
+    .my-group-item-info {
+        flex: 1;
+    }
+    
+    .my-group-item-name {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+    
+    .my-group-item-activity {
+        font-size: 13px;
+        color: var(--fb-dark-gray);
+    }
+    
+    .notification-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--fb-blue);
+        border-radius: 50%;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+    
+    .empty-state-icon {
+        width: 112px;
+        height: 112px;
+        margin: 0 auto 20px;
+        background: var(--fb-light-gray);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .empty-state-icon i {
+        font-size: 56px;
+        color: var(--fb-dark-gray);
+    }
+    
+    .empty-state-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    .empty-state-text {
+        color: var(--fb-dark-gray);
+        font-size: 15px;
+        margin-bottom: 20px;
+    }
+    
+    @media (max-width: 991px) {
+        .groups-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .groups-sidebar {
+            position: static;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .groups-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .groups-sidebar {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="groups-container">
+    <!-- Left Sidebar -->
+    <aside class="groups-sidebar d-none d-lg-block">
+        <div class="groups-sidebar-header">
+            <h2 class="groups-sidebar-title">Groups</h2>
+            <button class="create-group-btn" onclick="createGroup()" title="Create new group">
+                <i class="bi bi-gear-fill"></i>
+            </button>
+        </div>
+        
+        <div class="groups-search">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Search groups" onkeyup="searchGroups(this.value)">
+        </div>
+        
+        <div class="mb-3">
+            <a href="#your-groups" class="groups-nav-item active">
+                <div class="icon">
+                    <i class="bi bi-collection-fill"></i>
+                </div>
+                <span class="text">Your Groups</span>
+                {% if my_groups %}
+                <span class="count">{{ my_groups.count }}</span>
+                {% endif %}
+            </a>
+            
+            <a href="#discover" class="groups-nav-item">
+                <div class="icon gradient-1">
+                    <i class="bi bi-compass-fill"></i>
+                </div>
+                <span class="text">Discover</span>
+            </a>
+            
+            <a href="#invites" class="groups-nav-item">
+                <div class="icon gradient-2">
+                    <i class="bi bi-envelope-fill"></i>
+                </div>
+                <span class="text">Invites</span>
+            </a>
+            
+            <a href="#" class="groups-nav-item">
+                <div class="icon gradient-3">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </div>
+                <span class="text">Create New Group</span>
+            </a>
+        </div>
+        
+        {% if my_groups %}
+        <hr class="my-3">
+        
+        <div class="my-groups-list">
+            <h3 class="text-muted mb-2" style="font-size: 15px; font-weight: 600; padding: 0 8px;">Your Groups</h3>
+            {% for group in my_groups|slice:":5" %}
+            <a href="{% url 'group_detail' group.id %}" class="my-group-item">
+                {% if group.cover_photo %}
+                    <img src="{{ group.cover_photo.url }}" alt="{{ group.name }}">
+                {% else %}
+                    <div class="my-group-item-placeholder">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                {% endif %}
+                <div class="my-group-item-info">
+                    <div class="my-group-item-name">{{ group.name }}</div>
+                    <div class="my-group-item-activity">
+                        {% if group.unread_count %}
+                            {{ group.unread_count }} new post{{ group.unread_count|pluralize }}
+                        {% else %}
+                            Active {{ group.updated_at|timesince }} ago
+                        {% endif %}
+                    </div>
+                </div>
+                {% if group.unread_count %}
+                <div class="notification-dot"></div>
+                {% endif %}
+            </a>
+            {% endfor %}
+            
+            {% if my_groups.count > 5 %}
+            <a href="#" class="groups-nav-item mt-2">
+                <span class="text" style="color: var(--fb-blue); font-weight: 600;">See All</span>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="groups-main">
+        <!-- Your Groups Section -->
+        {% if my_groups %}
+        <section id="your-groups" class="mb-5">
+            <div class="section-header">
+                <div>
+                    <h3 class="section-title">Groups You've Joined</h3>
+                    <p class="section-subtitle">{{ my_groups.count }} group{{ my_groups.count|pluralize }}</p>
+                </div>
+                <a href="#" class="view-all-link">See All</a>
+            </div>
+            
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterGroups('all')">All</button>
+                <button class="filter-btn" onclick="filterGroups('recent')">Recently Active</button>
+                <button class="filter-btn" onclick="filterGroups('admin')">You're Admin</button>
+                <button class="filter-btn" onclick="filterGroups('public')">Public</button>
+                <button class="filter-btn" onclick="filterGroups('private')">Private</button>
+            </div>
+            
+            <div class="groups-grid" id="myGroupsGrid">
+                {% for group in my_groups %}
+                <div class="group-card" data-privacy="{{ group.privacy }}">
+                    <div class="group-card-cover">
+                        <a href="{% url 'group_detail' group.id %}">
+                            {% if group.cover_photo %}
+                                <img src="{{ group.cover_photo.url }}" alt="{{ group.name }}">
+                            {% else %}
+                                <div class="group-card-cover-placeholder">
+                                    <i class="bi bi-people-fill"></i>
+                                </div>
+                            {% endif %}
+                        </a>
+                        <div class="group-card-privacy">
+                            <i class="bi bi-{% if group.privacy == 'public' %}globe2{% elif group.privacy == 'private' %}lock-fill{% else %}shield-lock-fill{% endif %}"></i>
+                            {{ group.privacy|title }}
+                        </div>
+                    </div>
+                    
+                    <div class="group-card-body">
+                        <a href="{% url 'group_detail' group.id %}" class="group-card-name">
+                            {{ group.name }}
+                        </a>
+                        
+                        <div class="group-card-info">
+                            <div class="group-card-info-item">
+                                <i class="bi bi-people-fill"></i>
+                                <span>{{ group.members.count }} member{{ group.members.count|pluralize }}</span>
+                            </div>
+                            <div class="group-card-info-item">
+                                <i class="bi bi-dot"></i>
+                                <span>{{ group.posts.count }} post{{ group.posts.count|pluralize }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="group-card-activity">
+                            <i class="bi bi-clock"></i>
+                            <span>Last active {{ group.updated_at|timesince }} ago</span>
+                        </div>
+                        
+                        <div class="group-card-actions">
+                            <a href="{% url 'group_detail' group.id %}" class="group-card-btn group-card-btn-secondary">
+                                <i class="bi bi-house-door-fill"></i>
+                                Visit
+                            </a>
+                            <div class="dropdown" style="flex: 1;">
+                                <button class="group-card-btn group-card-btn-joined dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    Joined
+                                </button>
+                                <ul class="dropdown-menu w-100">
+                                    <li><a class="dropdown-item" href="#"><i class="bi bi-bell-fill me-2"></i>Turn on notifications</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="bi bi-pin-angle me-2"></i>Pin to shortcuts</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="leaveGroup({{ group.id }})"><i class="bi bi-box-arrow-right me-2"></i>Leave group</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+        
+        <!-- Discover Groups Section -->
+        <section id="discover">
+            <div class="section-header">
+                <div>
+                    <h3 class="section-title">Suggested For You</h3>
+                    <p class="section-subtitle">Groups based on your interests</p>
+                </div>
+            </div>
+            
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterDiscover('for-you')">For You</button>
+                <button class="filter-btn" onclick="filterDiscover('popular')">Popular Near You</button>
+                <button class="filter-btn" onclick="filterDiscover('friends')">Friends' Groups</button>
+                <button class="filter-btn" onclick="filterDiscover('new')">New Groups</button>
+            </div>
+            
+            {% if discover_groups %}
+            <div class="groups-grid" id="discoverGrid">
+                {% for group in discover_groups %}
+                <div class="group-card">
+                    <div class="group-card-cover">
+                        <a href="{% url 'group_detail' group.id %}">
+                            {% if group.cover_photo %}
+                                <img src="{{ group.cover_photo.url }}" alt="{{ group.name }}">
+                            {% else %}
+                                <div class="group-card-cover-placeholder">
+                                    <i class="bi bi-people-fill"></i>
+                                </div>
+                            {% endif %}
+                        </a>
+                        <div class="group-card-privacy">
+                            <i class="bi bi-{% if group.privacy == 'public' %}globe2{% elif group.privacy == 'private' %}lock-fill{% else %}shield-lock-fill{% endif %}"></i>
+                            {{ group.privacy|title }}
+                        </div>
+                    </div>
+                    
+                    <div class="group-card-body">
+                        <a href="{% url 'group_detail' group.id %}" class="group-card-name">
+                            {{ group.name }}
+                        </a>
+                        
+                        <div class="group-card-info">
+                            <div class="group-card-info-item">
+                                <i class="bi bi-people-fill"></i>
+                                <span>{{ group.members.count }} member{{ group.members.count|pluralize }}</span>
+                            </div>
+                        </div>
+                        
+                        <p style="font-size: 13px; color: var(--fb-dark-gray); margin-bottom: 12px; line-height: 1.4;">
+                            {{ group.description|truncatewords:15 }}
+                        </p>
+                        
+                        <div class="group-card-actions">
+                            <form method="post" action="{% url 'join_group' group.id %}" style="flex: 1; margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" class="group-card-btn group-card-btn-primary w-100">
+                                    <i class="bi bi-plus-lg"></i>
+                                    Join Group
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-search"></i>
+                </div>
+                <h3 class="empty-state-title">No groups found</h3>
+                <p class="empty-state-text">We couldn't find any groups that match your interests.<br>Try searching for something else.</p>
+                <a href="#" class="fb-btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Create New Group
+                </a>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+</div>
+
+<script>
+    // Search groups
+    function searchGroups(query) {
+        query = query.toLowerCase();
+        const groupCards = document.querySelectorAll('.group-card');
+        
+        groupCards.forEach(card => {
+            const name = card.querySelector('.group-card-name').textContent.toLowerCase();
+            if (name.includes(query)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    // Filter your groups
+    function filterGroups(type) {
+        // Update active button
+        event.target.parentElement.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        const groupCards = document.querySelectorAll('#myGroupsGrid .group-card');
+        
+        groupCards.forEach(card => {
+            if (type === 'all') {
+                card.style.display = 'block';
+            } else if (type === 'public') {
+                card.style.display = card.dataset.privacy === 'public' ? 'block' : 'none';
+            } else if (type === 'private') {
+                card.style.display = card.dataset.privacy === 'private' ? 'block' : 'none';
+            } else {
+                card.style.display = 'block'; // Implement other filters as needed
+            }
+        });
+    }
+    
+    // Filter discover groups
+    function filterDiscover(type) {
+        // Update active button
+        event.target.parentElement.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // Implement filtering logic here
+        console.log('Filtering by:', type);
+    }
+    
+    // Leave group
+    function leaveGroup(groupId) {
+        if (confirm('Are you sure you want to leave this group?')) {
+            fetch(`/groups/${groupId}/leave/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+        return false;
+    }
+    
+    // Create group
+    function createGroup() {
+        window.location.href = "#";
+    }
+    
+    // Sidebar navigation
+    document.querySelectorAll('.groups-nav-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (this.getAttribute('href').startsWith('#')) {
+                e.preventDefault();
+                document.querySelectorAll('.groups-nav-item').forEach(nav => {
+                    nav.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                const target = this.getAttribute('href').substring(1);
+                const section = document.getElementById(target);
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+{% block right_sidebar %}
+<!-- Hide right sidebar on groups page -->
+{% endblock %}

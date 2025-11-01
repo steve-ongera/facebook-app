@@ -1,0 +1,587 @@
+{% extends 'base.html' %}
+
+{% block title %}Facebook - Log In or Sign Up{% endblock %}
+
+{% block unauthenticated_content %}
+<style>
+    body {
+        background: linear-gradient(180deg, #ffffff 0%, #ffffff 50%, #f0f2f5 50%, #f0f2f5 100%);
+        min-height: 100vh;
+    }
+    
+    .login-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: 40px 20px;
+    }
+    
+    .login-container {
+        max-width: 1000px;
+        width: 100%;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 120px;
+    }
+    
+    /* Left Section - Branding */
+    .login-left {
+        flex: 1;
+        max-width: 580px;
+    }
+    
+    .fb-logo-text {
+        color: #1877f2;
+        font-size: 64px;
+        font-weight: bold;
+        margin-bottom: 16px;
+        letter-spacing: -2px;
+        line-height: 1;
+    }
+    
+    .fb-tagline {
+        font-size: 28px;
+        line-height: 32px;
+        font-weight: 400;
+        color: #1c1e21;
+    }
+    
+    /* Right Section - Login Box */
+    .login-right {
+        flex-shrink: 0;
+    }
+    
+    .login-box {
+        background: #ffffff;
+        padding: 24px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+        width: 396px;
+    }
+    
+    /* Form Styles */
+    .form-group {
+        position: relative;
+        margin-bottom: 16px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid #dddfe2;
+        border-radius: 6px;
+        font-size: 17px;
+        line-height: 24px;
+        color: #1c1e21;
+        transition: all 0.2s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #1877f2;
+        box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
+    }
+    
+    .form-control::placeholder {
+        color: #8a8d91;
+    }
+    
+    /* Password Toggle */
+    .password-wrapper {
+        position: relative;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: #65676b;
+        cursor: pointer;
+        padding: 8px;
+        font-size: 18px;
+        line-height: 1;
+        transition: color 0.2s ease;
+    }
+    
+    .password-toggle:hover {
+        color: #1877f2;
+    }
+    
+    .password-toggle:focus {
+        outline: none;
+    }
+    
+    /* Login Button */
+    .login-btn {
+        width: 100%;
+        background: #1877f2;
+        color: #ffffff;
+        border: none;
+        padding: 14px 16px;
+        border-radius: 6px;
+        font-size: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-bottom: 16px;
+        transition: background 0.2s ease;
+        line-height: 24px;
+    }
+    
+    .login-btn:hover {
+        background: #166fe5;
+    }
+    
+    .login-btn:active {
+        background: #1564d4;
+    }
+    
+    .login-btn:disabled {
+        background: #e4e6eb;
+        color: #bcc0c4;
+        cursor: not-allowed;
+    }
+    
+    /* Forgot Password Link */
+    .forgot-password {
+        text-align: center;
+        display: block;
+        margin-bottom: 20px;
+    }
+    
+    .forgot-password a {
+        color: #1877f2;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .forgot-password a:hover {
+        text-decoration: underline;
+    }
+    
+    /* Divider */
+    .divider {
+        border-top: 1px solid #dadde1;
+        margin: 20px 0;
+    }
+    
+    /* Create Account Button */
+    .create-account-wrapper {
+        text-align: center;
+    }
+    
+    .create-account-btn {
+        display: inline-block;
+        background: #42b72a;
+        color: #ffffff;
+        border: none;
+        padding: 14px 16px;
+        border-radius: 6px;
+        font-size: 17px;
+        font-weight: bold;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.2s ease;
+        line-height: 24px;
+    }
+    
+    .create-account-btn:hover {
+        background: #36a420;
+        color: #ffffff;
+    }
+    
+    .create-account-btn:active {
+        background: #2d8a19;
+    }
+    
+    /* Page Create Section */
+    .create-page {
+        text-align: center;
+        margin-top: 28px;
+        font-size: 14px;
+        color: #1c1e21;
+    }
+    
+    .create-page a {
+        color: #1c1e21;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    
+    .create-page a:hover {
+        text-decoration: underline;
+    }
+    
+    /* Error Messages */
+    .alert-container {
+        margin-bottom: 16px;
+    }
+    
+    .error-message {
+        background: #ffebe8;
+        border: 1px solid #dd3c10;
+        padding: 14px 16px;
+        border-radius: 6px;
+        margin-bottom: 12px;
+        color: #721c24;
+        font-size: 15px;
+        line-height: 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .error-message i {
+        color: #dd3c10;
+        font-size: 18px;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+    
+    .success-message {
+        background: #d4edda;
+        border: 1px solid #28a745;
+        padding: 14px 16px;
+        border-radius: 6px;
+        margin-bottom: 12px;
+        color: #155724;
+        font-size: 15px;
+        line-height: 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .success-message i {
+        color: #28a745;
+        font-size: 18px;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+    
+    /* Loading State */
+    .login-btn.loading {
+        position: relative;
+        color: transparent;
+    }
+    
+    .login-btn.loading::after {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 50%;
+        left: 50%;
+        margin-left: -10px;
+        margin-top: -10px;
+        border: 3px solid #ffffff;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spinner 0.6s linear infinite;
+    }
+    
+    @keyframes spinner {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Footer */
+    .login-footer {
+        margin-top: 40px;
+        padding: 20px;
+        text-align: center;
+        color: #65676b;
+        font-size: 12px;
+    }
+    
+    .login-footer a {
+        color: #65676b;
+        text-decoration: none;
+        margin: 0 8px;
+    }
+    
+    .login-footer a:hover {
+        text-decoration: underline;
+    }
+    
+    /* Input Validation States */
+    .form-control.is-invalid {
+        border-color: #dd3c10;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dd3c10'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dd3c10' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 16px;
+        padding-right: 40px;
+    }
+    
+    .form-control.is-valid {
+        border-color: #42b72a;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2342b72a' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 16px;
+        padding-right: 40px;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 991px) {
+        .login-container {
+            flex-direction: column;
+            gap: 40px;
+            padding: 20px;
+        }
+        
+        .login-left {
+            text-align: center;
+            max-width: 100%;
+        }
+        
+        .fb-logo-text {
+            font-size: 52px;
+        }
+        
+        .fb-tagline {
+            font-size: 24px;
+            line-height: 28px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .login-wrapper {
+            padding: 20px 10px;
+        }
+        
+        .login-box {
+            width: 100%;
+            max-width: 396px;
+            padding: 20px 16px;
+        }
+        
+        .fb-logo-text {
+            font-size: 42px;
+        }
+        
+        .fb-tagline {
+            font-size: 20px;
+            line-height: 24px;
+        }
+        
+        .form-control {
+            font-size: 16px;
+            padding: 12px 14px;
+        }
+        
+        .login-btn {
+            font-size: 18px;
+            padding: 12px 16px;
+        }
+        
+        .create-account-btn {
+            font-size: 16px;
+            padding: 12px 16px;
+        }
+    }
+</style>
+
+<div class="login-wrapper">
+    <div class="login-container">
+        <!-- Left Section - Branding -->
+        <div class="login-left">
+            <h1 class="fb-logo-text">facebook</h1>
+            <p class="fb-tagline">Connect with friends and the world around you on Facebook.</p>
+        </div>
+        
+        <!-- Right Section - Login Form -->
+        <div class="login-right">
+            <div class="login-box">
+                <!-- Alert Messages -->
+                {% if messages %}
+                <div class="alert-container">
+                    {% for message in messages %}
+                        {% if message.tags == 'error' or message.tags == 'danger' %}
+                        <div class="error-message">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                        {% else %}
+                        <div class="success-message">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Login Form -->
+                <form method="post" id="loginForm" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Email/Username Input -->
+                    <div class="form-group">
+                        <input 
+                            type="text" 
+                            name="username" 
+                            id="username"
+                            class="form-control" 
+                            placeholder="Email or phone number" 
+                            required
+                            autocomplete="username"
+                        >
+                    </div>
+                    
+                    <!-- Password Input with Toggle -->
+                    <div class="form-group">
+                        <div class="password-wrapper">
+                            <input 
+                                type="password" 
+                                name="password" 
+                                id="password"
+                                class="form-control" 
+                                placeholder="Password" 
+                                required
+                                autocomplete="current-password"
+                            >
+                            <button 
+                                type="button" 
+                                class="password-toggle" 
+                                id="togglePassword"
+                                aria-label="Toggle password visibility"
+                            >
+                                <i class="bi bi-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Login Button -->
+                    <button type="submit" class="login-btn" id="loginBtn">Log In</button>
+                </form>
+                
+                <!-- Forgot Password -->
+                <div class="forgot-password">
+                    <a href="#">Forgot password?</a>
+                </div>
+                
+                <!-- Divider -->
+                <div class="divider"></div>
+                
+                <!-- Create Account Button -->
+                <div class="create-account-wrapper">
+                    <a href="{% url 'register' %}" class="create-account-btn">Create new account</a>
+                </div>
+            </div>
+            
+            <!-- Create Page Section -->
+            <div class="create-page">
+                <a href="#"><strong>Create a Page</strong></a> for a celebrity, brand or business.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer Links -->
+<div class="login-footer">
+    <div class="mb-2">
+        <a href="#">English (US)</a>
+        <a href="#">Español</a>
+        <a href="#">Français (France)</a>
+        <a href="#">中文(简体)</a>
+        <a href="#">العربية</a>
+        <a href="#">Português (Brasil)</a>
+        <a href="#">Italiano</a>
+        <a href="#">한국어</a>
+        <a href="#">Deutsch</a>
+        <a href="#">हिन्दी</a>
+    </div>
+    <div class="mt-3">
+        <a href="#">About</a>
+        <a href="#">Help</a>
+        <a href="#">More</a>
+    </div>
+    <div class="mt-2">
+        Meta © 2024
+    </div>
+</div>
+
+<script>
+    // Password Toggle Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.getElementById('toggleIcon');
+        
+        togglePassword.addEventListener('click', function() {
+            // Toggle password visibility
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Toggle icon
+            if (type === 'text') {
+                toggleIcon.classList.remove('bi-eye');
+                toggleIcon.classList.add('bi-eye-slash');
+            } else {
+                toggleIcon.classList.remove('bi-eye-slash');
+                toggleIcon.classList.add('bi-eye');
+            }
+        });
+        
+        // Form Validation
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const loginBtn = document.getElementById('loginBtn');
+        
+        // Real-time validation
+        usernameInput.addEventListener('input', function() {
+            if (this.value.trim().length > 0) {
+                this.classList.remove('is-invalid');
+            }
+        });
+        
+        passwordInput.addEventListener('input', function() {
+            if (this.value.length > 0) {
+                this.classList.remove('is-invalid');
+            }
+        });
+        
+        // Form submission
+        loginForm.addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            // Validate username
+            if (usernameInput.value.trim() === '') {
+                usernameInput.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                usernameInput.classList.remove('is-invalid');
+            }
+            
+            // Validate password
+            if (passwordInput.value === '') {
+                passwordInput.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                passwordInput.classList.remove('is-invalid');
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Add loading state
+            loginBtn.classList.add('loading');
+            loginBtn.disabled = true;
+        });
+        
+        // Remove loading state if there's an error
+        {% if messages %}
+        loginBtn.classList.remove('loading');
+        loginBtn.disabled = false;
+        {% endif %}
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Messenger | Facebook{% endblock %}
+
+{% block content %}
+<style>
+    .messenger-container {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        height: calc(100vh - 120px);
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+    }
+    
+    .conversations-list {
+        border-right: 1px solid var(--border-gray);
+        overflow-y: auto;
+    }
+    
+    .conversation-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        cursor: pointer;
+        text-decoration: none;
+        color: #050505;
+    }
+    
+    .conversation-item:hover {
+        background: var(--light-gray);
+    }
+    
+    .conversation-item.active {
+        background: var(--hover-gray);
+    }
+    
+    .messages-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        color: var(--dark-gray);
+    }
+</style>
+
+<div class="messenger-container">
+    <div class="conversations-list">
+        <div style="padding: 16px; border-bottom: 1px solid var(--border-gray);">
+            <h2 style="font-size: 24px; font-weight: bold;">Chats</h2>
+        </div>
+        
+        {% for conversation in conversations %}
+        <a href="{% url 'conversation' conversation.id %}" class="conversation-item">
+            {% with conversation.participants.all|first as participant %}
+                {% if participant.profile_picture %}
+                <img src="{{ participant.profile_picture.url }}" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover;">
+                {% else %}
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--facebook-blue); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px;">
+                    {{ participant.first_name.0 }}
+                </div>
+                {% endif %}
+                
+                <div style="flex: 1; min-width: 0;">
+                    <h4 style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">
+                        {% if conversation.conversation_type == 'group' %}
+                            {{ conversation.name }}
+                        {% else %}
+                            {{ participant.get_full_name }}
+                        {% endif %}
+                    </h4>
+                    <p style="font-size: 13px; color: var(--dark-gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {% with conversation.messages.last as last_message %}
+                            {% if last_message %}
+                                {{ last_message.content|truncatechars:30 }}
+                            {% endif %}
+                        {% endwith %}
+                    </p>
+                </div>
+                
+                <div style="font-size: 12px; color: var(--dark-gray);">
+                    {{ conversation.updated_at|timesince }}
+                </div>
+            {% endwith %}
+        </a>
+        {% empty %}
+        <div style="padding: 40px; text-align: center;">
+            <i class="fab fa-facebook-messenger" style="font-size: 48px; color: var(--dark-gray); margin-bottom: 16px;"></i>
+            <p style="color: var(--dark-gray);">No conversations yet</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="messages-area">
+        <i class="fab fa-facebook-messenger" style="font-size: 80px; color: var(--facebook-blue); margin-bottom: 20px;"></i>
+        <h3 style="font-size: 24px; margin-bottom: 8px;">Your Messages</h3>
+        <p>Select a conversation to start chatting</p>
+    </div>
+</div>
+{% endblock %}

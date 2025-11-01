@@ -1,0 +1,645 @@
+{% extends 'base.html' %}
+
+{% block title %}Friends | Facebook{% endblock %}
+
+{% block extra_css %}
+<style>
+    .friends-container {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 16px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .friends-sidebar {
+        background: white;
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
+        height: fit-content;
+        position: sticky;
+        top: 72px;
+    }
+    
+    .friends-main {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
+    }
+    
+    .friends-sidebar-header {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 16px;
+    }
+    
+    .friends-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        color: #050505;
+        margin-bottom: 4px;
+        transition: background 0.2s;
+    }
+    
+    .friends-nav-item:hover {
+        background: var(--fb-hover);
+    }
+    
+    .friends-nav-item.active {
+        background: var(--fb-hover);
+    }
+    
+    .friends-nav-item .icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        background: var(--fb-light-gray);
+    }
+    
+    .friends-nav-item.active .icon {
+        background: var(--fb-blue);
+        color: white;
+    }
+    
+    .friends-nav-item .text {
+        flex: 1;
+        font-size: 15px;
+        font-weight: 500;
+    }
+    
+    .friends-nav-item .badge {
+        background: var(--fb-red);
+        color: white;
+        border-radius: 10px;
+        padding: 2px 8px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .section-title {
+        font-size: 20px;
+        font-weight: bold;
+    }
+    
+    .section-count {
+        color: var(--fb-dark-gray);
+        font-size: 17px;
+    }
+    
+    .friends-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+    }
+    
+    .friend-card {
+        background: white;
+        border: 1px solid var(--fb-border);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .friend-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, .15);
+    }
+    
+    .friend-card-image {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        display: block;
+    }
+    
+    .friend-card-placeholder {
+        width: 100%;
+        aspect-ratio: 1;
+        background: var(--fb-blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 48px;
+    }
+    
+    .friend-card-body {
+        padding: 12px;
+    }
+    
+    .friend-card-name {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: #050505;
+        text-decoration: none;
+        display: block;
+    }
+    
+    .friend-card-name:hover {
+        text-decoration: underline;
+    }
+    
+    .friend-card-info {
+        font-size: 13px;
+        color: var(--fb-dark-gray);
+        margin-bottom: 12px;
+        min-height: 18px;
+    }
+    
+    .friend-card-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .friend-card-btn {
+        flex: 1;
+        padding: 8px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .friend-card-btn-primary {
+        background: var(--fb-blue);
+        color: white;
+    }
+    
+    .friend-card-btn-primary:hover {
+        background: var(--fb-blue-hover);
+    }
+    
+    .friend-card-btn-secondary {
+        background: var(--fb-light-gray);
+        color: #050505;
+    }
+    
+    .friend-card-btn-secondary:hover {
+        background: var(--fb-hover);
+    }
+    
+    .friend-requests-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+    
+    .request-card {
+        display: flex;
+        gap: 12px;
+        padding: 16px;
+        background: white;
+        border: 1px solid var(--fb-border);
+        border-radius: 8px;
+        transition: box-shadow 0.2s;
+    }
+    
+    .request-card:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+    }
+    
+    .request-card-image {
+        width: 100px;
+        height: 100px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+    
+    .request-card-placeholder {
+        width: 100px;
+        height: 100px;
+        border-radius: 8px;
+        background: var(--fb-blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 32px;
+    }
+    
+    .request-card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .request-card-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: #050505;
+        text-decoration: none;
+        margin-bottom: 4px;
+    }
+    
+    .request-card-name:hover {
+        text-decoration: underline;
+    }
+    
+    .request-card-info {
+        font-size: 13px;
+        color: var(--fb-dark-gray);
+        margin-bottom: 4px;
+    }
+    
+    .request-card-mutual {
+        font-size: 13px;
+        color: var(--fb-dark-gray);
+        margin-bottom: 12px;
+        flex: 1;
+    }
+    
+    .request-card-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+    
+    .empty-state-icon {
+        font-size: 64px;
+        color: var(--fb-dark-gray);
+        margin-bottom: 16px;
+    }
+    
+    .empty-state-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    .empty-state-text {
+        color: var(--fb-dark-gray);
+        font-size: 15px;
+    }
+    
+    .search-friends {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .search-friends input {
+        width: 100%;
+        padding: 10px 12px 10px 40px;
+        border: 1px solid var(--fb-border);
+        border-radius: 50px;
+        font-size: 15px;
+        background: var(--fb-light-gray);
+    }
+    
+    .search-friends input:focus {
+        outline: none;
+        background: white;
+        border-color: var(--fb-blue);
+    }
+    
+    .search-friends i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--fb-dark-gray);
+    }
+    
+    .filter-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--fb-border);
+    }
+    
+    .filter-tab {
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--fb-dark-gray);
+        transition: all 0.2s;
+    }
+    
+    .filter-tab:hover {
+        background: var(--fb-hover);
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .filter-tab.active {
+        color: var(--fb-blue);
+        border-bottom-color: var(--fb-blue);
+    }
+    
+    @media (max-width: 991px) {
+        .friends-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .friends-sidebar {
+            position: static;
+        }
+        
+        .friends-nav-item {
+            padding: 12px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .friends-grid {
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        }
+        
+        .friend-requests-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .friends-sidebar {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="friends-container">
+    <!-- Left Sidebar -->
+    <aside class="friends-sidebar d-none d-lg-block">
+        <h2 class="friends-sidebar-header">Friends</h2>
+        
+        <a href="{% url 'friends' %}" class="friends-nav-item active">
+            <div class="icon">
+                <i class="bi bi-house-fill"></i>
+            </div>
+            <span class="text">Home</span>
+        </a>
+        
+        <a href="#friend-requests" class="friends-nav-item">
+            <div class="icon">
+                <i class="bi bi-person-fill"></i>
+            </div>
+            <span class="text">Friend Requests</span>
+            {% if friend_requests %}
+            <span class="badge">{{ friend_requests.count }}</span>
+            {% endif %}
+        </a>
+        
+        <a href="#suggestions" class="friends-nav-item">
+            <div class="icon">
+                <i class="bi bi-person-plus-fill"></i>
+            </div>
+            <span class="text">Suggestions</span>
+        </a>
+        
+        <a href="#all-friends" class="friends-nav-item">
+            <div class="icon">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <span class="text">All Friends</span>
+        </a>
+        
+        <a href="#birthdays" class="friends-nav-item">
+            <div class="icon">
+                <i class="bi bi-gift-fill"></i>
+            </div>
+            <span class="text">Birthdays</span>
+        </a>
+        
+        <a href="#" class="friends-nav-item">
+            <div class="icon">
+                <i class="bi bi-list-ul"></i>
+            </div>
+            <span class="text">Custom Lists</span>
+        </a>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="friends-main">
+        <!-- Friend Requests Section -->
+        {% if friend_requests %}
+        <section id="friend-requests" class="mb-5">
+            <div class="section-header">
+                <div>
+                    <h3 class="section-title">Friend Requests</h3>
+                    <p class="section-count">{{ friend_requests.count }} request{{ friend_requests.count|pluralize }}</p>
+                </div>
+                <a href="#" class="text-decoration-none text-primary fw-semibold">See All</a>
+            </div>
+            
+            <div class="friend-requests-grid">
+                {% for request in friend_requests %}
+                <div class="request-card">
+                    <a href="{% url 'profile' request.from_user.username %}">
+                        {% if request.from_user.profile_picture %}
+                            <img src="{{ request.from_user.profile_picture.url }}" alt="{{ request.from_user.get_full_name }}" class="request-card-image">
+                        {% else %}
+                            <div class="request-card-placeholder">
+                                {{ request.from_user.first_name.0 }}{{ request.from_user.last_name.0 }}
+                            </div>
+                        {% endif %}
+                    </a>
+                    
+                    <div class="request-card-body">
+                        <a href="{% url 'profile' request.from_user.username }}" class="request-card-name">
+                            {{ request.from_user.get_full_name }}
+                        </a>
+                        <p class="request-card-info">
+                            {{ request.created_at|timesince }} ago
+                        </p>
+                        <p class="request-card-mutual">
+                            {% if request.from_user.mutual_friends_count %}
+                                <i class="bi bi-people-fill"></i> {{ request.from_user.mutual_friends_count }} mutual friend{{ request.from_user.mutual_friends_count|pluralize }}
+                            {% else %}
+                                {% if request.from_user.current_city %}
+                                    <i class="bi bi-geo-alt-fill"></i> {{ request.from_user.current_city }}
+                                {% endif %}
+                            {% endif %}
+                        </p>
+                        
+                        <div class="request-card-actions">
+                            <form method="post" action="{% url 'accept_friend_request' request.id %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" class="friend-card-btn friend-card-btn-primary w-100">
+                                    Confirm
+                                </button>
+                            </form>
+                            <form method="post" action="#" style="margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" class="friend-card-btn friend-card-btn-secondary w-100">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+        
+        <!-- All Friends Section -->
+        <section id="all-friends">
+            <div class="section-header">
+                <div>
+                    <h3 class="section-title">All Friends</h3>
+                    <p class="section-count">{{ friends.count }} friend{{ friends.count|pluralize }}</p>
+                </div>
+            </div>
+            
+            <!-- Search and Filter -->
+            <div class="search-friends">
+                <i class="bi bi-search"></i>
+                <input type="text" id="friendSearch" placeholder="Search friends" onkeyup="filterFriends()">
+            </div>
+            
+            <div class="filter-tabs">
+                <button class="filter-tab active" onclick="filterByTab('all')">All Friends</button>
+                <button class="filter-tab" onclick="filterByTab('recent')">Recently Added</button>
+                <button class="filter-tab" onclick="filterByTab('hometown')">Hometown</button>
+                <button class="filter-tab" onclick="filterByTab('current')">Current City</button>
+            </div>
+            
+            {% if friends %}
+            <div class="friends-grid" id="friendsGrid">
+                {% for friend in friends %}
+                <div class="friend-card" data-name="{{ friend.get_full_name|lower }}" data-city="{{ friend.current_city|lower }}">
+                    <a href="{% url 'profile' friend.username %}">
+                        {% if friend.profile_picture %}
+                            <img src="{{ friend.profile_picture.url }}" alt="{{ friend.get_full_name }}" class="friend-card-image">
+                        {% else %}
+                            <div class="friend-card-placeholder">
+                                {{ friend.first_name.0 }}{{ friend.last_name.0 }}
+                            </div>
+                        {% endif %}
+                    </a>
+                    
+                    <div class="friend-card-body">
+                        <a href="{% url 'profile' friend.username %}" class="friend-card-name">
+                            {{ friend.get_full_name }}
+                        </a>
+                        <p class="friend-card-info">
+                            {% if friend.current_city %}
+                                <i class="bi bi-geo-alt-fill"></i> {{ friend.current_city }}
+                            {% elif friend.hometown %}
+                                <i class="bi bi-house-fill"></i> {{ friend.hometown }}
+                            {% endif %}
+                        </p>
+                        
+                        <div class="friend-card-actions">
+                            <div class="dropdown w-100">
+                                <button class="friend-card-btn friend-card-btn-secondary w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-people-fill me-1"></i> Friends
+                                </button>
+                                <ul class="dropdown-menu w-100">
+                                    <li><a class="dropdown-item" href="{% url 'profile' friend.username %}"><i class="bi bi-person me-2"></i>View Profile</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'messenger' %}?user={{ friend.id }}"><i class="bi bi-chat-fill me-2"></i>Send Message</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#"><i class="bi bi-bell-slash me-2"></i>Mute</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="bi bi-person-x me-2"></i>Unfriend</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-ban me-2"></i>Block</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <h3 class="empty-state-title">No friends yet</h3>
+                <p class="empty-state-text">When you add friends, you'll see them here.</p>
+                <a href="{% url 'friend_suggestions' %}" class="fb-btn-primary mt-3">
+                    <i class="bi bi-person-plus me-2"></i>Find Friends
+                </a>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+</div>
+
+<script>
+    // Search friends functionality
+    function filterFriends() {
+        const searchInput = document.getElementById('friendSearch').value.toLowerCase();
+        const friendCards = document.querySelectorAll('.friend-card');
+        
+        friendCards.forEach(card => {
+            const name = card.getAttribute('data-name');
+            if (name.includes(searchInput)) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    // Filter by tabs
+    function filterByTab(tab) {
+        // Update active tab
+        document.querySelectorAll('.filter-tab').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // Filter logic would go here
+        // For now, just show all
+        const friendCards = document.querySelectorAll('.friend-card');
+        friendCards.forEach(card => {
+            card.style.display = 'block';
+        });
+    }
+    
+    // Sidebar navigation
+    document.querySelectorAll('.friends-nav-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (this.getAttribute('href').startsWith('#')) {
+                e.preventDefault();
+                document.querySelectorAll('.friends-nav-item').forEach(nav => {
+                    nav.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                const target = this.getAttribute('href').substring(1);
+                const section = document.getElementById(target);
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+{% block right_sidebar %}
+<!-- Hide right sidebar on friends page -->
+{% endblock %}

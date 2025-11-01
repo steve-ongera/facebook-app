@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Facebook{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --fb-blue: #1877f2;
+            --fb-blue-hover: #166fe5;
+            --fb-dark-blue: #385898;
+            --fb-light-gray: #f0f2f5;
+            --fb-dark-gray: #65676b;
+            --fb-border: #dadde1;
+            --fb-hover: #e4e6eb;
+            --fb-red: #f02849;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--fb-light-gray);
+            padding-top: 56px;
+        }
+        
+        /* Navbar Styles */
+        .fb-navbar {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 56px;
+        }
+        
+        .fb-logo {
+            font-size: 40px;
+            color: var(--fb-blue);
+            text-decoration: none;
+        }
+        
+        .fb-search {
+            position: relative;
+            max-width: 240px;
+        }
+        
+        .fb-search input {
+            padding: 10px 12px 10px 40px;
+            border-radius: 50px;
+            border: none;
+            background: var(--fb-light-gray);
+            width: 100%;
+            font-size: 15px;
+        }
+        
+        .fb-search i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--fb-dark-gray);
+        }
+        
+        .fb-nav-center {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .fb-nav-btn {
+            padding: 12px 48px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            color: var(--fb-dark-gray);
+            font-size: 24px;
+            transition: all 0.3s;
+            position: relative;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .fb-nav-btn:hover {
+            background: var(--fb-hover);
+        }
+        
+        .fb-nav-btn.active {
+            color: var(--fb-blue);
+            border-bottom-color: var(--fb-blue);
+        }
+        
+        .fb-icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--fb-light-gray);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #050505;
+            position: relative;
+            transition: background 0.2s;
+        }
+        
+        .fb-icon-btn:hover {
+            background: var(--fb-hover);
+        }
+        
+        .fb-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--fb-red);
+            color: white;
+            border-radius: 50%;
+            min-width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 0 4px;
+            border: 2px solid white;
+        }
+        
+        .fb-profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+        
+        .fb-profile-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--fb-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        /* Sidebar Styles */
+        .fb-sidebar {
+            position: sticky;
+            top: 72px;
+            height: calc(100vh - 88px);
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        
+        .fb-sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .fb-sidebar::-webkit-scrollbar-thumb {
+            background: var(--fb-border);
+            border-radius: 4px;
+        }
+        
+        .fb-sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #050505;
+            font-weight: 500;
+            transition: background 0.2s;
+            margin-bottom: 4px;
+        }
+        
+        .fb-sidebar-item:hover {
+            background: var(--fb-hover);
+        }
+        
+        .fb-sidebar-item i {
+            font-size: 20px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .fb-sidebar-item img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        /* Content Area */
+        .fb-content {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+        
+        /* Card/Post Styles */
+        .fb-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, .1);
+            margin-bottom: 16px;
+        }
+        
+        /* Create Post Box */
+        .fb-create-post {
+            padding: 16px;
+        }
+        
+        .fb-create-input {
+            background: var(--fb-light-gray);
+            border: none;
+            border-radius: 50px;
+            padding: 10px 16px;
+            width: 100%;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .fb-create-input:hover {
+            background: var(--fb-hover);
+        }
+        
+        .fb-post-actions {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 12px;
+            border-top: 1px solid var(--fb-border);
+            margin-top: 12px;
+        }
+        
+        .fb-post-action-btn {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: 8px;
+            font-weight: 500;
+            color: var(--fb-dark-gray);
+            transition: background 0.2s;
+        }
+        
+        .fb-post-action-btn:hover {
+            background: var(--fb-hover);
+        }
+        
+        .fb-post-action-btn i {
+            font-size: 24px;
+        }
+        
+        /* Post Item */
+        .fb-post-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+        }
+        
+        .fb-post-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .fb-post-header-info h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .fb-post-header-info p {
+            font-size: 13px;
+            color: var(--fb-dark-gray);
+            margin: 0;
+        }
+        
+        .fb-post-content {
+            padding: 0 16px 16px;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+        
+        .fb-post-image {
+            width: 100%;
+            display: block;
+        }
+        
+        .fb-post-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            color: var(--fb-dark-gray);
+            font-size: 15px;
+            border-top: 1px solid var(--fb-border);
+        }
+        
+        .fb-post-buttons {
+            display: flex;
+            justify-content: space-around;
+            padding: 4px 8px;
+            border-top: 1px solid var(--fb-border);
+        }
+        
+        .fb-post-btn {
+            flex: 1;
+            padding: 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: var(--fb-dark-gray);
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+        
+        .fb-post-btn:hover {
+            background: var(--fb-hover);
+        }
+        
+        /* Right Sidebar */
+        .fb-right-sidebar {
+            position: sticky;
+            top: 72px;
+            height: calc(100vh - 88px);
+            overflow-y: auto;
+            padding-left: 8px;
+        }
+        
+        .fb-contacts-header {
+            color: var(--fb-dark-gray);
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding: 0 8px;
+        }
+        
+        .fb-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #050505;
+            transition: background 0.2s;
+            position: relative;
+        }
+        
+        .fb-contact-item:hover {
+            background: var(--fb-hover);
+        }
+        
+        .fb-contact-item img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .fb-online-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 32px;
+            width: 12px;
+            height: 12px;
+            background: #31a24c;
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+        
+        /* Alerts */
+        .fb-alerts {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+        }
+        
+        /* Buttons */
+        .fb-btn-primary {
+            background: var(--fb-blue);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+        
+        .fb-btn-primary:hover {
+            background: var(--fb-blue-hover);
+        }
+        
+        .fb-btn-secondary {
+            background: var(--fb-light-gray);
+            color: #050505;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+        
+        .fb-btn-secondary:hover {
+            background: var(--fb-hover);
+        }
+        
+        /* Mobile Menu */
+        .fb-mobile-menu {
+            display: none;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 1199.98px) {
+            .fb-right-sidebar {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 991.98px) {
+            .fb-sidebar {
+                display: none;
+            }
+            
+            .fb-mobile-menu {
+                display: flex;
+                background: white;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 999;
+                box-shadow: 0 -2px 4px rgba(0, 0, 0, .1);
+                justify-content: space-around;
+                padding: 8px 0;
+            }
+            
+            .fb-mobile-menu-btn {
+                flex: 1;
+                background: transparent;
+                border: none;
+                padding: 8px;
+                font-size: 24px;
+                color: var(--fb-dark-gray);
+                cursor: pointer;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+            }
+            
+            .fb-mobile-menu-btn.active {
+                color: var(--fb-blue);
+            }
+            
+            .fb-mobile-menu-btn small {
+                font-size: 10px;
+            }
+            
+            body {
+                padding-bottom: 56px;
+            }
+        }
+        
+        @media (max-width: 767.98px) {
+            .fb-nav-center {
+                display: none;
+            }
+            
+            .fb-search {
+                max-width: 180px;
+            }
+            
+            .fb-content {
+                padding: 0;
+            }
+        }
+        
+        @media (max-width: 575.98px) {
+            .fb-search input {
+                width: 120px;
+            }
+            
+            .navbar-brand {
+                font-size: 32px;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <!-- Navigation Bar -->
+    <nav class="fb-navbar">
+        <div class="container-fluid h-100">
+            <div class="row h-100 align-items-center">
+                <!-- Left Section -->
+                <div class="col-auto">
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{% url 'newsfeed' %}" class="fb-logo">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <div class="fb-search d-none d-sm-block">
+                            <i class="bi bi-search"></i>
+                            <form action="{% url 'search' %}" method="get" style="display: inline;">
+                                <input type="text" name="q" placeholder="Search Facebook">
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Center Section -->
+                <div class="col d-none d-lg-flex justify-content-center">
+                    <div class="fb-nav-center">
+                        <a href="{% url 'newsfeed' %}" class="fb-nav-btn {% if request.resolver_match.url_name == 'newsfeed' %}active{% endif %}">
+                            <i class="bi bi-house-door-fill"></i>
+                        </a>
+                        <a href="{% url 'friends' %}" class="fb-nav-btn {% if request.resolver_match.url_name == 'friends' %}active{% endif %}">
+                            <i class="bi bi-people-fill"></i>
+                        </a>
+                        <a href="{% url 'watch' %}" class="fb-nav-btn {% if request.resolver_match.url_name == 'watch' %}active{% endif %}">
+                            <i class="bi bi-play-btn-fill"></i>
+                        </a>
+                        <a href="{% url 'marketplace' %}" class="fb-nav-btn {% if request.resolver_match.url_name == 'marketplace' %}active{% endif %}">
+                            <i class="bi bi-shop"></i>
+                        </a>
+                        <a href="{% url 'groups' %}" class="fb-nav-btn {% if request.resolver_match.url_name == 'groups' %}active{% endif %}">
+                            <i class="bi bi-collection-fill"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Right Section -->
+                <div class="col-auto ms-auto">
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="fb-icon-btn d-none d-md-flex">
+                            <i class="bi bi-grid-3x3-gap-fill"></i>
+                        </button>
+                        <a href="{% url 'messenger' %}" class="fb-icon-btn">
+                            <i class="bi bi-messenger"></i>
+                            <span class="fb-badge">3</span>
+                        </a>
+                        <a href="{% url 'notifications' %}" class="fb-icon-btn">
+                            <i class="bi bi-bell-fill"></i>
+                            <span class="fb-badge">5</span>
+                        </a>
+                        <a href="{% url 'profile' user.username %}">
+                            {% if user.profile_picture %}
+                                <img src="{{ user.profile_picture.url }}" alt="Profile" class="fb-profile-pic">
+                            {% else %}
+                                <div class="fb-profile-placeholder">
+                                    {{ user.first_name.0 }}{{ user.last_name.0 }}
+                                </div>
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Messages/Alerts -->
+    {% if messages %}
+    <div class="fb-alerts">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Main Container -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Sidebar -->
+            <div class="col-lg-3 col-xl-2 d-none d-lg-block">
+                <div class="fb-sidebar">
+                    <a href="{% url 'profile' user.username %}" class="fb-sidebar-item">
+                        {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="{{ user.get_full_name }}">
+                        {% else %}
+                            <div class="fb-profile-placeholder" style="width: 36px; height: 36px; font-size: 14px;">
+                                {{ user.first_name.0 }}{{ user.last_name.0 }}
+                            </div>
+                        {% endif %}
+                        <span>{{ user.get_full_name }}</span>
+                    </a>
+                    <a href="{% url 'friends' %}" class="fb-sidebar-item">
+                        <i class="bi bi-people-fill" style="color: var(--fb-blue);"></i>
+                        <span>Friends</span>
+                    </a>
+                    <a href="{% url 'groups' %}" class="fb-sidebar-item">
+                        <i class="bi bi-collection-fill" style="color: var(--fb-blue);"></i>
+                        <span>Groups</span>
+                    </a>
+                    <a href="{% url 'marketplace' %}" class="fb-sidebar-item">
+                        <i class="bi bi-shop" style="color: var(--fb-blue);"></i>
+                        <span>Marketplace</span>
+                    </a>
+                    <a href="{% url 'watch' %}" class="fb-sidebar-item">
+                        <i class="bi bi-play-btn-fill" style="color: var(--fb-blue);"></i>
+                        <span>Watch</span>
+                    </a>
+                    <a href="{% url 'messenger' %}" class="fb-sidebar-item">
+                        <i class="bi bi-messenger" style="color: var(--fb-blue);"></i>
+                        <span>Messenger</span>
+                    </a>
+                    <a href="{% url 'pages' %}" class="fb-sidebar-item">
+                        <i class="bi bi-flag-fill" style="color: #f7b928;"></i>
+                        <span>Pages</span>
+                    </a>
+                    <a href="#" class="fb-sidebar-item">
+                        <i class="bi bi-calendar-event-fill" style="color: #f3425f;"></i>
+                        <span>Events</span>
+                    </a>
+                    <a href="#" class="fb-sidebar-item">
+                        <i class="bi bi-clock-history" style="color: #1877f2;"></i>
+                        <span>Memories</span>
+                    </a>
+                    <a href="#" class="fb-sidebar-item">
+                        <i class="bi bi-bookmark-fill" style="color: #9360f7;"></i>
+                        <span>Saved</span>
+                    </a>
+                    <hr>
+                    <a href="{% url 'settings' %}" class="fb-sidebar-item">
+                        <i class="bi bi-gear-fill" style="color: var(--fb-dark-gray);"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="{% url 'logout' %}" class="fb-sidebar-item">
+                        <i class="bi bi-box-arrow-right" style="color: var(--fb-dark-gray);"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-lg-6 col-xl-6">
+                <div class="fb-content py-3">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+            
+            <!-- Right Sidebar -->
+            <div class="col-xl-4 d-none d-xl-block">
+                <div class="fb-right-sidebar py-3">
+                    {% block right_sidebar %}
+                    <h3 class="fb-contacts-header">Contacts</h3>
+                    <div class="fb-contact-item">
+                        <img src="https://via.placeholder.com/36" alt="Contact">
+                        <span>John Doe</span>
+                        <div class="fb-online-indicator"></div>
+                    </div>
+                    <div class="fb-contact-item">
+                        <img src="https://via.placeholder.com/36" alt="Contact">
+                        <span>Jane Smith</span>
+                        <div class="fb-online-indicator"></div>
+                    </div>
+                    <div class="fb-contact-item">
+                        <img src="https://via.placeholder.com/36" alt="Contact">
+                        <span>Mike Johnson</span>
+                    </div>
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Bottom Menu -->
+    <div class="fb-mobile-menu d-lg-none">
+        <a href="{% url 'newsfeed' %}" class="fb-mobile-menu-btn {% if request.resolver_match.url_name == 'newsfeed' %}active{% endif %}">
+            <i class="bi bi-house-door-fill"></i>
+        </a>
+        <a href="{% url 'friends' %}" class="fb-mobile-menu-btn {% if request.resolver_match.url_name == 'friends' %}active{% endif %}">
+            <i class="bi bi-people-fill"></i>
+        </a>
+        <a href="{% url 'watch' %}" class="fb-mobile-menu-btn {% if request.resolver_match.url_name == 'watch' %}active{% endif %}">
+            <i class="bi bi-play-btn-fill"></i>
+        </a>
+        <a href="{% url 'marketplace' %}" class="fb-mobile-menu-btn {% if request.resolver_match.url_name == 'marketplace' %}active{% endif %}">
+            <i class="bi bi-shop"></i>
+        </a>
+        <a href="{% url 'groups' %}" class="fb-mobile-menu-btn {% if request.resolver_match.url_name == 'groups' %}active{% endif %}">
+            <i class="bi bi-collection-fill"></i>
+        </a>
+        <button class="fb-mobile-menu-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu">
+            <i class="bi bi-list"></i>
+        </button>
+    </div>
+    
+    <!-- Mobile Offcanvas Menu -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileMenu">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Menu</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <a href="{% url 'profile' user.username %}" class="fb-sidebar-item">
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="{{ user.get_full_name }}">
+                {% else %}
+                    <div class="fb-profile-placeholder" style="width: 36px; height: 36px; font-size: 14px;">
+                        {{ user.first_name.0 }}{{ user.last_name.0 }}
+                    </div>
+                {% endif %}
+                <span>{{ user.get_full_name }}</span>
+            </a>
+            <hr>
+            <a href="{% url 'messenger' %}" class="fb-sidebar-item">
+                <i class="bi bi-messenger" style="color: var(--fb-blue);"></i>
+                <span>Messenger</span>
+            </a>
+            <a href="{% url 'pages' %}" class="fb-sidebar-item">
+                <i class="bi bi-flag-fill" style="color: #f7b928;"></i>
+                <span>Pages</span>
+            </a>
+            <a href="#" class="fb-sidebar-item">
+                <i class="bi bi-calendar-event-fill" style="color: #f3425f;"></i>
+                <span>Events</span>
+            </a>
+            <a href="#" class="fb-sidebar-item">
+                <i class="bi bi-clock-history" style="color: #1877f2;"></i>
+                <span>Memories</span>
+            </a>
+            <a href="#" class="fb-sidebar-item">
+                <i class="bi bi-bookmark-fill" style="color: #9360f7;"></i>
+                <span>Saved</span>
+            </a>
+            <hr>
+            <a href="{% url 'settings' %}" class="fb-sidebar-item">
+                <i class="bi bi-gear-fill" style="color: var(--fb-dark-gray);"></i>
+                <span>Settings</span>
+            </a>
+            <a href="{% url 'logout' %}" class="fb-sidebar-item">
+                <i class="bi bi-box-arrow-right" style="color: var(--fb-dark-gray);"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- Not authenticated content -->
+    {% block unauthenticated_content %}{% endblock %}
+    {% endif %}
+    
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

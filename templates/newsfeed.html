@@ -1,0 +1,516 @@
+{% extends 'base.html' %}
+
+{% block title %}Facebook{% endblock %}
+
+{% block content %}
+<!-- Stories Section -->
+<div class="fb-card" style="padding: 12px;">
+    <div class="stories-container d-flex gap-2" style="overflow-x: auto; scrollbar-width: none;">
+        <!-- Create Story -->
+        <div class="story-item" style="min-width: 112px; cursor: pointer;">
+            <div class="position-relative" style="height: 200px; border-radius: 8px; overflow: hidden; background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url('{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}https://via.placeholder.com/112x200{% endif %}'); background-size: cover; background-position: center;">
+                <div class="position-absolute bottom-0 w-100 text-center pb-3">
+                    <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; margin-bottom: 8px;">
+                        <i class="bi bi-plus-lg text-primary" style="font-size: 24px;"></i>
+                    </div>
+                    <div class="text-white fw-semibold" style="font-size: 13px;">Create Story</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Stories -->
+        {% for story in stories %}
+        <div class="story-item" style="min-width: 112px; cursor: pointer;" onclick="viewStory({{ story.id }})">
+            <div class="position-relative" style="height: 200px; border-radius: 8px; overflow: hidden; {% if story.media_file %}background: url('{{ story.media_file.url }}'); background-size: cover; background-position: center;{% elif story.background_color %}background: {{ story.background_color }};{% else %}background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);{% endif %}">
+                <!-- Story Ring and Profile Picture -->
+                <div class="position-absolute top-0 start-0 p-2">
+                    <div class="rounded-circle border border-3 border-primary p-1" style="width: 44px; height: 44px; background: white;">
+                        {% if story.user.profile_picture %}
+                            <img src="{{ story.user.profile_picture.url }}" alt="{{ story.user.get_full_name }}" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <div class="fb-profile-placeholder" style="width: 100%; height: 100%; font-size: 12px;">
+                                {{ story.user.first_name.0 }}{{ story.user.last_name.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- Story Text Overlay -->
+                <div class="position-absolute bottom-0 w-100 p-2">
+                    <div class="text-white fw-semibold text-truncate" style="font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
+                        {{ story.user.first_name }}
+                    </div>
+                </div>
+                <!-- Gradient Overlay -->
+                <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6));"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Create Post Box -->
+<div class="fb-card fb-create-post">
+    <div class="d-flex gap-2 align-items-center pb-3 border-bottom">
+        {% if user.profile_picture %}
+            <img src="{{ user.profile_picture.url }}" alt="{{ user.get_full_name }}" class="fb-profile-pic">
+        {% else %}
+            <div class="fb-profile-placeholder">
+                {{ user.first_name.0 }}{{ user.last_name.0 }}
+            </div>
+        {% endif %}
+        <input type="text" class="fb-create-input" placeholder="What's on your mind, {{ user.first_name }}?" onclick="openCreatePostModal()">
+    </div>
+    
+    <div class="fb-post-actions">
+        <button class="fb-post-action-btn" onclick="createPost('photo')">
+            <i class="bi bi-images text-success"></i>
+            <span>Photo/Video</span>
+        </button>
+        <button class="fb-post-action-btn" onclick="createPost('feeling')">
+            <i class="bi bi-emoji-smile text-warning"></i>
+            <span>Feeling/Activity</span>
+        </button>
+        <button class="fb-post-action-btn" onclick="createPost('live')">
+            <i class="bi bi-camera-video text-danger"></i>
+            <span>Live Video</span>
+        </button>
+    </div>
+</div>
+
+<!-- Posts Feed -->
+{% for post in posts %}
+<div class="fb-card fb-post">
+    <!-- Post Header -->
+    <div class="fb-post-header">
+        <a href="{% url 'profile' post.author.username %}">
+            {% if post.author.profile_picture %}
+                <img src="{{ post.author.profile_picture.url }}" alt="{{ post.author.get_full_name }}">
+            {% else %}
+                <div class="fb-profile-placeholder">
+                    {{ post.author.first_name.0 }}{{ post.author.last_name.0 }}
+                </div>
+            {% endif %}
+        </a>
+        <div class="fb-post-header-info flex-grow-1">
+            <h4 class="mb-0">
+                <a href="{% url 'profile' post.author.username %}" class="text-decoration-none text-dark">
+                    {{ post.author.get_full_name }}
+                    {% if post.author.is_verified %}
+                        <i class="bi bi-patch-check-fill text-primary" style="font-size: 14px;"></i>
+                    {% endif %}
+                </a>
+                {% if post.feeling %}
+                    <span class="text-muted fw-normal"> is {{ post.feeling }}</span>
+                {% endif %}
+                {% if post.tagged_users.exists %}
+                    <span class="text-muted fw-normal"> with </span>
+                    {% for tagged in post.tagged_users.all|slice:":3" %}
+                        <a href="{% url 'profile' tagged.username %}" class="text-decoration-none">{{ tagged.get_full_name }}</a>{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                    {% if post.tagged_users.count > 3 %}
+                        <span class="text-muted fw-normal"> and {{ post.tagged_users.count|add:"-3" }} others</span>
+                    {% endif %}
+                {% endif %}
+            </h4>
+            <p class="mb-0">
+                <a href="{% url 'post_detail' post.id %}" class="text-decoration-none text-muted">
+                    {{ post.created_at|timesince }} ago
+                </a>
+                {% if post.privacy == 'public' %}
+                    <i class="bi bi-globe2" style="font-size: 12px;"></i>
+                {% elif post.privacy == 'friends' %}
+                    <i class="bi bi-people-fill" style="font-size: 12px;"></i>
+                {% else %}
+                    <i class="bi bi-lock-fill" style="font-size: 12px;"></i>
+                {% endif %}
+                {% if post.location %}
+                    <span> — at <strong>{{ post.location }}</strong></span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-link text-dark p-2" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                {% if post.author == user %}
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i>Edit Post</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-trash me-2"></i>Delete Post</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                {% endif %}
+                <li><a class="dropdown-item" href="#"><i class="bi bi-bookmark me-2"></i>Save Post</a></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-link-45deg me-2"></i>Copy Link</a></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-bell-slash me-2"></i>Turn Off Notifications</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-flag me-2"></i>Report Post</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Post Content -->
+    {% if post.content %}
+    <div class="fb-post-content">
+        <p class="mb-0" style="white-space: pre-wrap;">{{ post.content }}</p>
+    </div>
+    {% endif %}
+    
+    <!-- Post Media -->
+    {% if post.media.exists %}
+        {% if post.media.count == 1 %}
+            {% for media in post.media.all %}
+                {% if media.media_type == 'image' %}
+                    <img src="{{ media.file.url }}" alt="{{ media.description }}" class="fb-post-image">
+                {% elif media.media_type == 'video' %}
+                    <video controls class="fb-post-image">
+                        <source src="{{ media.file.url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                {% endif %}
+            {% endfor %}
+        {% elif post.media.count == 2 %}
+            <div class="row g-1">
+                {% for media in post.media.all %}
+                <div class="col-6">
+                    {% if media.media_type == 'image' %}
+                        <img src="{{ media.file.url }}" alt="{{ media.description }}" class="w-100" style="height: 300px; object-fit: cover;">
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% elif post.media.count >= 3 %}
+            <div class="row g-1">
+                <div class="col-6">
+                    <img src="{{ post.media.first.file.url }}" alt="" class="w-100" style="height: 400px; object-fit: cover;">
+                </div>
+                <div class="col-6">
+                    <div class="row g-1">
+                        {% for media in post.media.all|slice:"1:3" %}
+                        <div class="col-12">
+                            <div class="position-relative">
+                                <img src="{{ media.file.url }}" alt="" class="w-100" style="height: 198px; object-fit: cover;">
+                                {% if forloop.last and post.media.count > 3 %}
+                                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.5); cursor: pointer;">
+                                    <span class="text-white fw-bold" style="font-size: 32px;">+{{ post.media.count|add:"-3" }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+    
+    <!-- Shared Post -->
+    {% if post.shared_post %}
+    <div class="border rounded m-3 p-3">
+        <div class="d-flex gap-2 align-items-center mb-2">
+            {% if post.shared_post.author.profile_picture %}
+                <img src="{{ post.shared_post.author.profile_picture.url }}" alt="" style="width: 32px; height: 32px; border-radius: 50%;">
+            {% else %}
+                <div class="fb-profile-placeholder" style="width: 32px; height: 32px; font-size: 12px;">
+                    {{ post.shared_post.author.first_name.0 }}{{ post.shared_post.author.last_name.0 }}
+                </div>
+            {% endif %}
+            <div>
+                <strong>{{ post.shared_post.author.get_full_name }}</strong>
+                <p class="mb-0 text-muted" style="font-size: 13px;">{{ post.shared_post.created_at|timesince }} ago</p>
+            </div>
+        </div>
+        <p class="mb-2">{{ post.shared_post.content|truncatewords:50 }}</p>
+        {% if post.shared_post.media.exists %}
+            <img src="{{ post.shared_post.media.first.file.url }}" alt="" class="w-100 rounded">
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Post Stats (Reactions & Comments Count) -->
+    <div class="fb-post-stats">
+        <div class="d-flex align-items-center gap-1">
+            {% if post.reactions.exists %}
+                <div class="d-flex" style="margin-left: -2px;">
+                    {% with reactions=post.reactions.values|slice:":3" %}
+                        {% for reaction_type in reactions %}
+                            <span class="reaction-icon" style="width: 18px; height: 18px; background: #1877f2; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-left: -2px; border: 2px solid white;">
+                                {% if reaction_type == 'like' %}👍{% elif reaction_type == 'love' %}❤️{% elif reaction_type == 'haha' %}😂{% elif reaction_type == 'wow' %}😮{% elif reaction_type == 'sad' %}😢{% elif reaction_type == 'angry' %}😠{% endif %}
+                            </span>
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+                <span class="text-muted">{{ post.reactions.count }}</span>
+            {% endif %}
+        </div>
+        <div class="text-muted">
+            {% if post.comments.count > 0 %}
+                <span>{{ post.comments.count }} comment{{ post.comments.count|pluralize }}</span>
+            {% endif %}
+            {% if post.comments.count > 0 and post.post_type == 'shared' %}
+                <span class="mx-1">•</span>
+            {% endif %}
+            {% if post.post_type == 'shared' %}
+                <span>{{ post.shares_count|default:0 }} share{{ post.shares_count|default:0|pluralize }}</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Post Action Buttons -->
+    <div class="fb-post-buttons">
+        <button class="fb-post-btn" onclick="reactToPost({{ post.id }})">
+            <i class="bi bi-hand-thumbs-up"></i>
+            <span>Like</span>
+        </button>
+        <button class="fb-post-btn" onclick="toggleComments({{ post.id }})">
+            <i class="bi bi-chat"></i>
+            <span>Comment</span>
+        </button>
+        <button class="fb-post-btn" onclick="sharePost({{ post.id }})">
+            <i class="bi bi-share"></i>
+            <span>Share</span>
+        </button>
+    </div>
+    
+    <!-- Comments Section -->
+    <div class="comments-section p-3 border-top" id="comments-{{ post.id }}" style="display: none;">
+        <!-- Existing Comments -->
+        {% for comment in post.comments.all|slice:":3" %}
+        <div class="d-flex gap-2 mb-3">
+            {% if comment.author.profile_picture %}
+                <img src="{{ comment.author.profile_picture.url }}" alt="" style="width: 32px; height: 32px; border-radius: 50%;">
+            {% else %}
+                <div class="fb-profile-placeholder" style="width: 32px; height: 32px; font-size: 12px;">
+                    {{ comment.author.first_name.0 }}{{ comment.author.last_name.0 }}
+                </div>
+            {% endif %}
+            <div class="flex-grow-1">
+                <div class="bg-light rounded px-3 py-2">
+                    <strong style="font-size: 13px;">{{ comment.author.get_full_name }}</strong>
+                    <p class="mb-0" style="font-size: 15px;">{{ comment.content }}</p>
+                </div>
+                <div class="d-flex gap-3 mt-1 ms-2" style="font-size: 12px;">
+                    <a href="#" class="text-decoration-none text-muted fw-semibold">Like</a>
+                    <a href="#" class="text-decoration-none text-muted fw-semibold">Reply</a>
+                    <span class="text-muted">{{ comment.created_at|timesince }} ago</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        {% if post.comments.count > 3 %}
+        <div class="mb-3">
+            <a href="{% url 'post_detail' post.id %}" class="text-decoration-none">
+                View {{ post.comments.count|add:"-3" }} more comment{{ post.comments.count|add:"-3"|pluralize }}
+            </a>
+        </div>
+        {% endif %}
+        
+        <!-- Add Comment -->
+        <div class="d-flex gap-2">
+            {% if user.profile_picture %}
+                <img src="{{ user.profile_picture.url }}" alt="" style="width: 32px; height: 32px; border-radius: 50%;">
+            {% else %}
+                <div class="fb-profile-placeholder" style="width: 32px; height: 32px; font-size: 12px;">
+                    {{ user.first_name.0 }}{{ user.last_name.0 }}
+                </div>
+            {% endif %}
+            <div class="flex-grow-1 position-relative">
+                <input type="text" class="form-control rounded-pill" placeholder="Write a comment..." style="padding-right: 80px;">
+                <div class="position-absolute end-0 top-50 translate-middle-y d-flex gap-1 pe-2">
+                    <button class="btn btn-link btn-sm p-1 text-muted">
+                        <i class="bi bi-emoji-smile"></i>
+                    </button>
+                    <button class="btn btn-link btn-sm p-1 text-muted">
+                        <i class="bi bi-camera"></i>
+                    </button>
+                    <button class="btn btn-link btn-sm p-1 text-muted">
+                        <i class="bi bi-filetype-gif"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="fb-card text-center py-5">
+    <i class="bi bi-inbox" style="font-size: 64px; color: var(--fb-dark-gray);"></i>
+    <h4 class="mt-3">No posts to show</h4>
+    <p class="text-muted">When your friends post, you'll see their posts here.</p>
+</div>
+{% endfor %}
+
+<!-- Load More Button -->
+{% if posts %}
+<div class="text-center my-4">
+    <button class="fb-btn-secondary" onclick="loadMorePosts()">
+        <i class="bi bi-arrow-clockwise me-2"></i>
+        Load More Posts
+    </button>
+</div>
+{% endif %}
+
+<style>
+    .stories-container::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .story-item {
+        flex-shrink: 0;
+        transition: transform 0.2s;
+    }
+    
+    .story-item:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+<script>
+    function viewStory(storyId) {
+        window.location.href = `/stories/${storyId}/`;
+    }
+    
+    function openCreatePostModal() {
+        // Open create post modal
+        window.location.href = "{% url 'create_post' %}";
+    }
+    
+    function createPost(type) {
+        window.location.href = `{% url 'create_post' %}?type=${type}`;
+    }
+    
+    function reactToPost(postId) {
+        fetch(`/posts/${postId}/react/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ reaction_type: 'like' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+    
+    function toggleComments(postId) {
+        const commentsSection = document.getElementById(`comments-${postId}`);
+        if (commentsSection.style.display === 'none') {
+            commentsSection.style.display = 'block';
+        } else {
+            commentsSection.style.display = 'none';
+        }
+    }
+    
+    function sharePost(postId) {
+        if (confirm('Share this post?')) {
+            window.location.href = `/posts/${postId}/share/`;
+        }
+    }
+    
+    function loadMorePosts() {
+        // Implement pagination
+        window.location.href = "?page=2";
+    }
+</script>
+{% endblock %}
+
+{% block right_sidebar %}
+<div class="py-3 px-2">
+    <!-- Friend Suggestions -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fb-contacts-header mb-0">Friend Suggestions</h6>
+        <a href="{% url 'friends' %}" class="text-decoration-none text-primary" style="font-size: 14px;">See All</a>
+    </div>
+    
+    {% for suggestion in friend_suggestions %}
+    <div class="d-flex align-items-center gap-2 p-2 rounded hover-bg mb-2" style="cursor: pointer;">
+        <a href="{% url 'profile' suggestion.username %}">
+            {% if suggestion.profile_picture %}
+                <img src="{{ suggestion.profile_picture.url }}" alt="{{ suggestion.get_full_name }}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+            {% else %}
+                <div class="fb-profile-placeholder" style="width: 48px; height: 48px; font-size: 16px;">
+                    {{ suggestion.first_name.0 }}{{ suggestion.last_name.0 }}
+                </div>
+            {% endif %}
+        </a>
+        <div class="flex-grow-1">
+            <a href="{% url 'profile' suggestion.username %}" class="text-decoration-none text-dark">
+                <strong style="font-size: 14px;">{{ suggestion.get_full_name }}</strong>
+            </a>
+            <p class="mb-0 text-muted" style="font-size: 12px;">
+                {% with mutual_count=suggestion.mutual_friends_count|default:0 %}
+                    {% if mutual_count > 0 %}
+                        {{ mutual_count }} mutual friend{{ mutual_count|pluralize }}
+                    {% else %}
+                        New to Facebook
+                    {% endif %}
+                {% endwith %}
+            </p>
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="sendFriendRequest({{ suggestion.id }})">
+            <i class="bi bi-person-plus"></i>
+        </button>
+    </div>
+    {% empty %}
+    <p class="text-muted text-center" style="font-size: 14px;">No suggestions available</p>
+    {% endfor %}
+    
+    <hr class="my-3">
+    
+    <!-- Contacts -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fb-contacts-header mb-0">Contacts</h6>
+        <div class="d-flex gap-2">
+            <button class="btn btn-link btn-sm p-1 text-muted">
+                <i class="bi bi-search"></i>
+            </button>
+            <button class="btn btn-link btn-sm p-1 text-muted">
+                <i class="bi bi-three-dots"></i>
+            </button>
+        </div>
+    </div>
+    
+    {% for friend in friend_suggestions|slice:":8" %}
+    <a href="{% url 'messenger' %}?user={{ friend.id }}" class="fb-contact-item text-decoration-none">
+        {% if friend.profile_picture %}
+            <img src="{{ friend.profile_picture.url }}" alt="{{ friend.get_full_name }}">
+        {% else %}
+            <div class="fb-profile-placeholder" style="width: 36px; height: 36px; font-size: 14px;">
+                {{ friend.first_name.0 }}{{ friend.last_name.0 }}
+            </div>
+        {% endif %}
+        <span>{{ friend.get_full_name }}</span>
+        {% if friend.is_online %}
+            <div class="fb-online-indicator"></div>
+        {% endif %}
+    </a>
+    {% endfor %}
+</div>
+
+<style>
+    .hover-bg:hover {
+        background: var(--fb-hover);
+    }
+</style>
+
+<script>
+    function sendFriendRequest(userId) {
+        fetch(`/friends/request/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Friend request sent!');
+                location.reload();
+            }
+        });
+    }
+</script>
+{% endblock %}
